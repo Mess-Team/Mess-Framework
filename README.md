@@ -23,11 +23,11 @@ Below I will list all the main files and the structure in which they are used fo
   <li>Format.js - </li>
   <li>Visual.js - </li>
   <li>Switch.js - </li>
-</il>
+</ul>
 
 <h3>Methods</h3>
 Below I will list all the main Methods and the structure in which they are used for. Categorising and detailing the main functions of each. 
 
 <ul>
   <li><b>N/A</b></li>
-</il>
+</ul>
