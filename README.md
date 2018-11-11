@@ -12,6 +12,9 @@ Below is all of the Data Attributes, what I plan for their uses and plan to stop
   <li>Data-Format - </li>
   <li>Data-Group - </li>
   <li>Data-State - </li>
+  <li>Data-Tag - </li>
+  <li>Data-Visual - </li>
+  <li>Data-Label -</li>
 </ul>
 
 <h3>Files</h3>
