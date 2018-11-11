@@ -23,7 +23,7 @@
 			
 			$('[data-tag="'+Key+'"]').css('border-bottom','1px solid green');
 			
-			// IF CONTAINS POLICYSTARTDATE
+			// IF CONTAINS PROCEEDING DATE
 			if('ProceedingDate' in Data[Key])
 			{
 				FormatedDate = ManipulateDate(Data[Key].ProceedingDate);
@@ -35,15 +35,15 @@
 					ValidationFailedData.push(Key);
 				}
 				// IS BEFORE TODAY
-				else if (DateDifference(dateFull, FormatedDate['FullDate'], 1) < 0)
+				else if (DateDifference(dateFull, FormatedDate['F'], 1) < 0)
 				{
 					ValidationStatus = false;
 					ValidationFailedData.push(Key);
 				}
-				// POLICY DATE IS VALID
+				// DATE IS VALID
 				else
 				{
-					ValidationSuccessfulData[Key] = Data[Key].PolicyStartDate;
+					ValidationSuccessfulData[Key] = Data[Key].ProceedingDate;
 				}
 			}
 			
@@ -52,7 +52,7 @@
 			{
 				// RUN FUNCTIONS > FORMATE DATE > DATE COMPARISON
 				var FormatedDate = ManipulateDate(Data[Key].Age);
-				var Difference = DateDifference(dateFull, FormatedDate['FullDate'], 2);
+				var Difference = DateDifference(dateFull, FormatedDate['F'], 2);
 				
 				// AGE IS 17 OR HIGHER & 85 OR LOWER
 				if (Difference['Y'] >= 17 && Difference['Y'] <= 85)
@@ -72,7 +72,7 @@
 				}
 			}
 			
-			// IF CONTAINS REQUIRED
+			// IF CONTAINS REQUIRED !!!!!!!!!
 			if('Required' in Data[Key])
 			{
 				if ($('[data-tag="'+Key+'"]').val() != "")
@@ -183,11 +183,11 @@
 		
 		// BUILD DATE ARRAY
 		var date = {
-			'FullDate': dateFull,
-			'Seconds': dateSeconds,
-			'YearDate': dateYear,
-			'DayDate': dateDay,
-			'MonthDate': dateMonth
+			'F': dateFull,
+			'S': dateSeconds,
+			'Y': dateYear,
+			'D': dateDay,
+			'M': dateMonth
 		};
 		
 		return date;
