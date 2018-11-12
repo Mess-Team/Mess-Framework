@@ -12,161 +12,165 @@ function Validation(ValidationStatus, Data)
 		var date = getDate();
 	}
 	
+	
 	// LOOP EACH ITEM
-	for (var Key in Data)
+	for (var Key in Data )
 	{
-		
-		$('[data-validation="'+Key+'"]').css('border-bottom','1px solid green');
-		
-		// VALIDATION > DATES
-
-		// IF CONTAINS PROCEEDING DATE
-		if('ProceedingDate' in Data[Key])
+		// LOOP EACH ITEM WITHIN OBJECT
+		for (var Keys in Data[Key])
 		{
-			FormatedDate = ManipulateDate(Data[Key].ProceedingDate);
-			
-			// DATE IS EMPTY
-			if (Data[Key].ProceedingDate == "")
-			{
-				ValidationStatus = false;
-				ValidationFailedData.push(Key);
-			}
-			// IS BEFORE TODAY
-			else if (DateDifference(date['F'], FormatedDate['F'], 1) < 0)
-			{
-				ValidationStatus = false;
-				ValidationFailedData.push(Key);
-			}
-			// DATE IS VALID
-			else
-			{
-				ValidationSuccessfulData[Key] = Data[Key].ProceedingDate;
-			}
-		}
+			$('[data-validation="'+Keys+'"]').css('border-bottom','1px solid green');
 		
-		// IF CONTAINS AGE
-		if('Age' in Data[Key])
-		{
-			// RUN FUNCTIONS > FORMATE DATE > DATE COMPARISON
-			var FormatedDate = ManipulateDate(Data[Key].Age);
-			var Difference = DateDifference(date['F'], FormatedDate['F'], 2);
-			
-			// AGE IS 17 OR HIGHER & 85 OR LOWER
-			if (Difference['Y'] >= 17 && Difference['Y'] <= 85)
-			{				
-				ValidationSuccessfulData[Key] = Data[Key].Age;
-			}
-			// AGE IS HIGHER THAN 85
-			else if (Difference['Y'] > 85)
-			{
-				ValidationStatus = false;
-				ValidationFailedData.push(Key);
-			}
-			else
-			{
-				ValidationStatus = false;
-				ValidationFailedData.push(Key);
-			}
-		}
+			// VALIDATION > DATES
 		
-		// VALIDATION > SETTINGS
-
-		// IF CONTAINS REQUIRED !!!!!!!!!
-		if('Required' in Data[Key])
-		{
-			if ($('[data-validation="'+Key+'"]').val() != "")
+			// IF CONTAINS PROCEEDINGDATE
+			if('ProceedingDate' in Data[Key])
 			{
-				ValidationSuccessfulData[Key] = Data[Key].SelectRequired;
-			}
-			else
-			{
-				ValidationStatus = false;
-				ValidationFailedData.push(Key);
-			}
-		}
-
-		// VALIDATION > CREDENTIALS	
-		
-		// IF CONTAINS PASSWORD VALIDATION
-		if ('Password' in Data[Key])
-		{
-			// PASSWORD 8 OR MORE CHARACTERS
-			if (Data[Key].Password.length >= 8)
-			{
-				// CHECK PASSWORD CONTAINS CAPITAL LETTER
-				if (Data[Key].Password.replace(/[^A-Z]/g, "").length >= 1)
+				FormatedDate = FormatDate(Data[Key].ProceedingDate);
+				
+				// DATE IS EMPTY
+				if (Data[Key].ProceedingDate == "")
 				{
-					ValidationSuccessfulData[Key] = Data[Key].Password
+					ValidationStatus = false;
+					ValidationFailedData.push(Keys);
 				}
-				// PASSWORD DOESN'T CONTAIN CAPITAL LETTER
+				// DATE IS BEFORE TODAY
+				else if (DateDifference(date['F'], FormatedDate['F'], 1) < 0)
+				{
+					ValidationStatus = false;
+					ValidationFailedData.push(Keys);
+				}
+				// DATE IS OVER 30 DAYS
+				else if (DateDifference(date['F'], FormatedDate['F'], 1) > 30)
+				{
+					ValidationStatus = false;
+					ValidationFailedData.push(Keys);
+				}
+				// DATE IS VALID
+				else
+				{
+					ValidationSuccessfulData[Keys] = Data[Key].ProceedingDate;
+				}
+			}
+			
+			// IF CONTAINS AGE VALIDATION
+			if('Age' in Data[Key])
+			{
+				// RUN FUNCTIONS > FORMATE DATE > DATE COMPARISON
+				var FormatedDate = FormatDate(Data[Key].Age);
+				var Difference = DateDifference(date['F'], FormatedDate['F'], 2);
+				
+				// AGE IS 17 OR HIGHER & 85 OR LOWER
+				if (Difference['Y'] >= 17 && Difference['Y'] <= 85)
+				{				
+					ValidationSuccessfulData[Keys] = Data[Key].Age;
+				}
+				// AGE IS HIGHER THAN 85
+				else if (Difference['Y'] > 85)
+				{
+					ValidationStatus = false;
+					ValidationFailedData.push(Keys);
+				}
+				else
+				{
+					ValidationStatus = false;
+					ValidationFailedData.push(Keys);
+				}
+			}
+			
+			// VALIDATION > REQUIRES
+			
+			// IF CONTAINS REQUIRED
+			if('Required' in Data[Key])
+			{
+				if ($('[data-count="'+Key+'"]').attr('data-save') != "")
+				{
+					ValidationSuccessfulData[Key] = Data[Key].Required;
+				}
 				else
 				{
 					ValidationStatus = false;
 					ValidationFailedData.push(Key);
 				}
 			}
-			// PASSWORD IS LESS THAN 8 CHARACTERS
-			else
-			{
-				ValidationStatus = false;
-				ValidationFailedData.push(Key);
-			}
-		}
-
-		// IF CONTAINS PASSWORD VARIFICATION
-		if ('Password_Confirmation' in Data[Key])
-		{
-			// CHECK PASSWORD AND CONFIRMATION PASSWORD MATCH
-			if (Data[Key].Password === Data[Key].Password_Confirmation)
-			{
-				ValidationSuccessfulData[Key] = Data[Key].Password_Confirmation;
-			}
-			// PASSWORDS DO NOT MATCH
-			else
-			{
-				ValidationStatus = false;
-				ValidationFailedData.push(Key);
-			}
-		}
-
-		// IF CONTAINS EMAIL VALIDATION
-		if('Email' in Data[Key])
-		{
-			var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-			var ValidationCheck =  re.test(Data[Key].Email);
+	
+			// VALIDATION > CREDENTIALS
 			
-			// IF EMAIL IS VALID
-			if (ValidationCheck)
+			// IF CONTAINS EMAIL VALIDATION
+			if('Email' in Data[Key])
 			{
-				ValidationSuccessfulData[Key] = Data[Key].Email;
+				// CHECK EMAIL IS VALID
+				if(/^(\w+|\d+)([\.\-!#$%&'*+\/=?^_`{|}~]?([a-z]|[0-9]))*@\w+([\.-]?\w+)*(\.\w{1,3})+$/i.exec(Data[Key].Email) === null)
+				{
+					ValidationStatus = false;
+					ValidationFailedData.push(Keys);
+				}
+				else
+				{
+					ValidationSuccessfulData[Keys] = Data[Key].Email;
+				}
+				
 			}
-			// EMAIL IS NOT VALID
-			else
+			
+			// IF CONTAINS PASSSWORD VALIDATION
+			if ('Password' in Data[Key])
 			{
-				ValidationStatus = false;
-				ValidationFailedData.push(Key);
+				// IF PASSWORD VALID
+				if(Data[Key].Password.length < 8)
+				{
+					ValidationStatus = false;
+					ValidationFailedData.push(Keys);
+				}
+				else
+				{
+					ValidationSuccessfulData[Keys] = Data[Key].Password;
+				}
 			}
+			
+			// IF CONTAINS PASSWORD CONFIRMATION VALIDATION
+			if ('Password2' in Data[Key])
+			{
+				// PASSWORDS CALLED TO VALIDATE PASSWORDS ARE MATCHING
+				var P = Key - 1; // WORK AROUND !!!!!!!!!!!!!!!!!
+				var Password = Data[P].Password;
+				var Password2 = Data[Key].Password2;
+				
+				if (Password != Password2 || Password == '')
+				{
+					ValidationStatus = false;
+					ValidationFailedData.push(Keys);
+				}
+				else
+				{
+					ValidationSuccessfulData[Keys] = Data[Key].Password2;
+				}
+			}
+			
+			// IF PHONE VALIDATION
+			if ('Phone' in Data[Key])
+			{
+				if(/^[0-9\'\- ]{11,13}$/i.exec(Data[Key].Phone) !== null)
+				{
+					ValidationSuccessfulData[Keys] = Data[Key].Phone;
+				}
+				else
+				{
+					ValidationStatus = false;
+					ValidationFailedData.push(Keys);				
+				}
+			}
+			
 		}
-
-		// IF CONTAINS PHONE VALIDATION
-		if ('Phone' in Data[Key])
-		{
-
-		}
-
-		// IF CONTAINS POSTCODE VALIDATION
-		if ('Postcode' in Data[Key])
-		{
-
-		}
-		
 	}
 	
-	// IF DATA TAG IN FALSE VALIDATION ARRAY SHOW INVALID !!!!!!
+	// SHOW INVALID DATA
 	for (i = 0; i < ValidationFailedData.length; ++i)
 	{
 		$('[data-validation="'+ValidationFailedData[i]+'"]').css('border-bottom','1px solid red');
+		
+		$('[data-count="'+ValidationFailedData[i]+'"]').css('border-bottom', '1px solid red');
 	}
+	
 	// SUCCESSFUL DATA > JSON
 	ValidationSuccessfulData = JSON.stringify(ValidationSuccessfulData);
 	ValidationStatus = true;
