@@ -1,165 +1,107 @@
-<style>
-input, select {
-  border: none;
-  background-color: none;
-  outline: 0;
-  font-size: 25px;
-  width: 300px;
-  height: 30px;
-  color: grey;
-  float: right;
-}
+<!DOCTYPE html>
+<html>
+		<head>
+			<link rel="stylesheet" href="css/Validation.css">
+			<title>Validation Example</title>
+		</head>
+<body>
+	<span>
+		<section class="container">
+			<form>
+				<fieldset>
+					<legend>Validation Form</legend>
+					
+						<!-- DATE VALIDATION >  START DATE TODAY OR GREATER > NO MORE THAN 30 DAYS-->
+						<label>Policy Start</label>
+						<input type="date" data-validation="ProceedingDate"> <br><br>
+					
+						<!-- DATE VALIDATION > MIN 2 WEEKS BEFORE 17 > MAX AGED 85 -->
+						<label>Age 17 to 85</label>
+						<input type="date" data-validation="Age"> <br><br>
+						
+						<!-- SELECT VALIDATION > MUST BEEN SELECTED -->
+						<label>Must Be Selected</label>
+						<select data-validation="Required">
+							<option value="">Please Select Something...</option>
+							<option value="Option 1">Option 1</option>
+							<option value="Option 2">Option 2</option>
+							<option value="Option 3">Option 3</option>
+							<option value="Option 4">Option 4</option>
+						</select> <br><br>
+						
+						<!-- INPUT FIELD REQUIRED -->
+						<label>Must Be Inputted</label>
+						<input type="text" data-validation="Required" placeholder="Add Some Text..."><br><br>
+						
+						<!-- INPUT FIELD REQUIRED -->
+						<label>Must Be Inputted</label>
+						<input type="text" data-validation="Required" placeholder="Add Some Text..."><br><br>
+						
+						<!-- INPUT FIELD REQUIRED -->
+						<label>Must Be Inputted</label>
+						<input type="text" data-validation="Required" placeholder="Add Some Text..."><br><br>
+						
+						<!-- EMAIL VALIDATION -->
+						<label for="Email">Email</label>
+						<input type="email" placeholder="email@address.com" data-validation="Email"><br><br>
+						
+						<!-- PASSWORD VALIDATION -->
+						<label for="Password">Password</label>
+						<input type="password" placeholder="********" data-validation="Password"><br><br>
+						
+						<!-- CONFIRMATION PASSWORD VALIDATION -->
+						<label>Confirm Password</label>
+						<input type="password" placeholder="********" data-validation="Password2"><br><br>
+						
+						<button type="" data-action="validate">Validate</button>
+						
+				</fieldset>
+			</form>
+		</section>
+	</span>
 
-input:focus, select:focus {
-  border: none;
-  background-color: none;
-  outline: 0;
-  width: 300px;
-  height: 30px;
-  color: black;
-}
+	<!--  INCLUDED SCRIPTS -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="/js/validation.js"></script>
+	<!-- / INCLUDED SCRIPTS -->
 
-input:hover, select:hover {
-	color: black;
-}
 
-label {
-	font-family: Helvetica;
-	font-size: 25px;
-	padding-right: 20px;
-	border-right: 1px solid grey;
-	float: left;
-	text-align: right;
-	width: 300px;
-}
+	<script>
+		$('[data-action="validate"]').click(function() {
+			
+			event.preventDefault();
 
-button {
-	width: 100%;
-	height: 5%;
-	border: 0px solid black;
-	font-family: Arial;
-	font-size: 30px;
-	box-shadow: 1px 1px 1px grey;
-}
-
-fieldset {
-	width: 700px; 
-	text-align: center;
-	margin-right: auto;
-	margin-left: auto;
-	border: 3px solid grey;
-}
-
-fieldset:hover {
-	box-shadow: 1px 1px 1px grey;
-}
-
-fieldset legend {
-	font-size: 40px;
-	font-family: Arial;
-}
-
-.age {
-	text-align: center;
-	font-size: 60px;
-	font-family: Helvetica;
-}
-</style>
-
-<span>
-
-	<section class="container">
-		
-		<form>
-			<fieldset>
-				<legend>Validation Form</legend>
+			var Data = [];
+			var Count = 0;
+			
+			// BUILD DATA OBJECT
+			$('[data-validation]').each(function() {
 				
-					<!-- DATE VALIDATION >  START DATE TODAY OR GREATER > NO MORE THAN 30 DAYS-->
-					<label for="ProceedingDate">Policy Start</label>
-					<input name="ProceedingDate" type="date" data-validation="ProceedingDate"> <br><br>
+				// GET DATA
+				var Inner = [];
+				var DataValidation = $(this).attr('data-validation');
+				var DataSave = $(this).attr('data-save');
 				
-					<!-- DATE VALIDATION > MIN 2 WEEKS BEFORE 17 > MAX AGED 85 -->
-					<label for="Age">Age 17 to 85</label>
-					<input name="Age" type="date" data-validation="Age"> <br><br>
-					
-					<!-- SELECT VALIDATION > MUST BEEN SELECTED -->
-					<label for="Required">Must Be Selected</label>
-					<select name="Required" data-validation="Required">
-						<option value="">Please Select Something...</option>
-						<option value="Option 1">Option 1</option>
-						<option value="Option 2">Option 2</option>
-						<option value="Option 3">Option 3</option>
-						<option value="Option 4">Option 4</option>
-					</select> <br><br>
-					
-					<!-- INPUT FIELD MUST BE SELECTED -->
-					<label for="Required">Must Be Inputted</label>
-					<input type="text" data-validation="Required" placeholder="Add Some Text..."><br><br>
-					
-					<!-- INPUT FIELD MUST BE SELECTED -->
-					<label for="Required">Must Be Inputted</label>
-					<input type="text" data-validation="Required" placeholder="Add Some Text..."><br><br>
-					
-					<!-- EMAIL VALIDATION -->
-					<label for="EmailValidation">Email</label>
-					<input type="email" placeholder="email@address.com" data-validation="Email"><br><br>
-					
-					<button type="" data-action="validate">Validate</button>
-					
-			</fieldset>
-		</form>
-		
-		<div class="age"></div>
-		
-	</section>
-	
-</span>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="validation.js"></script>
-<script>
-
-	$('[data-action="validate"]').click(function() {
-		
-		event.preventDefault();
-		var Data = [];
-		var Count = 0;
-		
-		// BUILD DATA OBJECT
-		$('[data-validation]').each(function() {
+				// FIX FOR REQUIRED OVERWRITING
+				if (DataValidation == 'Required')
+				{
+					$(this).attr('data-count', Count);
+				}
+				
+				// PUSH DATA
+				Inner[DataValidation] = DataSave;
+				Data[Count++] = Inner;
+				
+			});	
 			
-			// MANUALLY SET DATA SAVE FOR TESTING PURPOSES
-			$(this).attr('data-save', $(this).val());
+			// DEBUG
+			console.log(Data);
 			
-			// GET DATA
-			var Inner = [];
-			var DataTag = $(this).attr('data-validation');
-			var DataSave = $(this).attr('data-save');
+			// RUN VALIDATION FUNCTION
+			ValidationOutput = Validation('', Data);
 			
-			// PUSH DATA
-			Inner[DataTag] = DataSave;
-			Data[Count++] = Inner;
-
-			/*
-
-			ORIGINAL MANUAL BUILD OF DATA
-
-			var Data = {
-				'ProceedingDate':{'ProceedingDate':$('[data-tag="ProceedingDate"]').attr('data-save')},
-				'Age':{'Age':$('[data-tag="Age"]').attr('data-save')},
-				'Required':{'Required':$('[data-tag="Requied"]').attr('data-save')},
-				'Email':{'Email':$('[data-tag="Email"]').attr('data-save')},
-			};
-			
-			*/
-			
-		});	
+		});
 		
-		console.log(Data);
-		
-		// RUN VALIDATION FUNCTION
-		ValidationOutput = Validation('', Data);
-		
-	});
-	
-</script>
+	</script>
+</body>
+</html>

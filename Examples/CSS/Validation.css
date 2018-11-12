@@ -1,0 +1,67 @@
+/* Basic Example Styling For Validation.html */
+
+input, select {
+  border: none;
+  background-color: none;
+  outline: 0;
+  font-size: 25px;
+  width: 300px;
+  height: 30px;
+  color: grey;
+  float: right;
+}
+
+input:focus, select:focus {
+  border: none;
+  background-color: none;
+  outline: 0;
+  width: 300px;
+  height: 30px;
+  color: black;
+}
+
+input:hover, select:hover {
+	color: black;
+}
+
+label {
+	font-family: Helvetica;
+	font-size: 25px;
+	padding-right: 20px;
+	border-right: 1px solid grey;
+	float: left;
+	text-align: right;
+	width: 300px;
+}
+
+button {
+	width: 100%;
+	height: 5%;
+	border: 0px solid black;
+	font-family: Arial;
+	font-size: 30px;
+	box-shadow: 1px 1px 1px grey;
+}
+
+fieldset {
+	width: 700px; 
+	text-align: center;
+	margin-right: auto;
+	margin-left: auto;
+	border: 3px solid grey;
+}
+
+fieldset:hover {
+	box-shadow: 1px 1px 1px grey;
+}
+
+fieldset legend {
+	font-size: 40px;
+	font-family: Arial;
+}
+
+.age {
+	text-align: center;
+	font-size: 60px;
+	font-family: Helvetica;
+}
