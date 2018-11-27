@@ -1,5 +1,5 @@
 	// VALIDATION FUNCTION
-	function ValidationDraft(ValidationStatus, Data)
+	function Validation(ValidationStatus, Data)
 	{
 		// DEBUG
 		console.log(Data);
