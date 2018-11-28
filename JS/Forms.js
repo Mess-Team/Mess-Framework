@@ -8,22 +8,22 @@ $('[data-tag="RemoveDS"]').each(function(){
 	$(this).removeAttr('data-save');
 });
 
-// 	FORMS > VALIDATION
+// 	FORMS 	> 	VALIDATION
 var FormsCounter = 0;
 
 // INSERT COUNT FOR VALIDATION FIELDS
 $('[data-validation]').each(function(){
-	$(this).attr('data-count', FormsCounter);
+	$(this).attr('data-validationcount', FormsCounter);
 	FormsCounter++;
 });
 
 // VALIDATE ON FORM BUTTON CLICK
-$('[data-validate="true"]').on('click', RFFV);
+$('[data-validate="true"]').on('click', Val_RFF);
 
 // VALIDATE ON KEYPRESS
-$('[data-validation]').on('keyup', RSFFV);
+$('[data-validation]').on('keyup change', Val_RSFF);
 
-var RFFV = function RunFullFormValidation()
+var Val_RFF = function RunFullForm()
 {
 	var Data = [];
 	var Count = 0;
@@ -33,11 +33,6 @@ var RFFV = function RunFullFormValidation()
 		var Inner = [];
 		var ValidationType = $(this).attr('data-validation');
 		var DataSave = $(this).attr('data-save');
-		
-		if (ValidationType == 'Required')
-		{
-			$(this).attr('data-count', Count);
-		}
 	
 		// PUSH DATA
 		Inner[ValidationType] = DataSave;
@@ -46,22 +41,23 @@ var RFFV = function RunFullFormValidation()
 	
 	// RUN VALIDATION FUNCTION
 	ValidationOutput = Validation('', Data);
+	$(this).attr('data-status', ValidationOutput[1]);
 	
-	// VALIDATION PASSED
+	// VALIDATION PASSED COMPLETE FORM
 	if (ValidationOutput[1] == '')
 	{
-		console.log('Validation Successful.');
+		$(this).next('.hidden').click();
 	}
 }
 
-var RSFFV = function RunSingleFormFieldValidation()
+var Val_RSFF = function RunSingleFormField()
 {
 	// BUILD DATA OBJECT
 	var Inner = [];
 	var Data = [];
 	var ValidationType = $(this).attr('data-validation');
-	var DataSave = $(this).attr('data-save');
-	var Count = $(this).attr('data-count');
+	var DataSave = $(this).val();
+	var Count = $(this).attr('data-validationcount');
 	
 	// PUSH DATA
 	Inner[ValidationType] = DataSave;
