@@ -1,20 +1,17 @@
 	// VALIDATION FUNCTION
 	function Validation(ValidationStatus, Data)
 	{
-		// DEBUG
-		console.log(Data);
-		
 		// START VALIDATION
 		if(ValidationStatus == '')
 		{
 			var ValidationStatus = true;
 			var ValidationFailedData = [];
-			var ValidationFailedStatus = [];
 			var ValidationSuccessfulData = {};
+			var ValidationFailedStatus = [];
 			
 			// SET CURRENT DATE & FORMAT
 			var CurrentDate = new Date();
-			var date = FormatDate(CurrentDate);
+			var D = FormatDate(CurrentDate);
 		}
 		
 		// LOOP EACH ITEM
@@ -23,41 +20,44 @@
 			// LOOP EACH ITEM WITHIN OBJECT
 			for (var Keys in Data[Key])
 			{
+				// PASSED OPTIONAL VARIABLES
+				var RULE = Keys;
+				var INPUT = $('[data-validationcount="'+Key+'"]');
+				var VALUE = INPUT.val();
+				var ECODE = INPUT.attr('data-validationmessage'); // OR 'DEFAULT';
+				var OPTION = INPUT.attr('data-validationoption'); // OR 'DEFAULT';
+				
 				// SET VALIDATION VISUAL STATUS
-				$('[data-count="'+Key+'"]').css('border-bottom','');
-				$('[data-count="'+Key+'"]').next('.ValidationErrorMessage_Visual').hide();
+				INPUT.css('border-bottom','');
+				INPUT.next('.ValidationErrorMessage_Visual').hide();
 			
-				//		VALIDATION > DATES
-			
-				// IF CONTAINS PROCEEDING DATE
+				// IF CONTAINS PROCEEDINGDATE
 				if('ProceedingDate' in Data[Key])
 				{
-					FormatedDate = FormatDate(Data[Key].ProceedingDate);
-					
-					// PROCEEDING DATE IS EMPTY
-					if (Data[Key].ProceedingDate == "")
+					FD = FormatDate(VALUE);
+					if (VALUE == "")
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
 					}
-					// PROCEEDING DATE IS BEFORE TODAY
-					else if (DateDifference(date['F'], FormatedDate['F'], 1) < 0)
+					// DATE IS BEFORE TODAY
+					else if (DateDifference(D['F'], FD['F'], 1) < 0)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(3);
+						ValidationFailedStatus.push(ECODE || 3);
 					}
-					// PROCEEDING DATE IS OVER 30 DAYS
-					else if (DateDifference(date['F'], FormatedDate['F'], 1) > 30)
+					// DATE IS OVER 30 DAYS
+					else if (DateDifference(D['F'], FD['F'], 1) > 30)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(4);
+						ValidationFailedStatus.push(ECODE || 4);
 					}
-					// PROCEEDING DATE IS VALID
+					// DATE IS VALID
 					else
 					{
-						ValidationSuccessfulData[Key] = Data[Key].ProceedingDate;
+						ValidationSuccessfulData[Key] = VALUE;
 					}
 				}
 				
@@ -65,26 +65,47 @@
 				if('Age' in Data[Key])
 				{
 					// FORMAT DATE & GET DIFFERENCE
-					var FormatedDate = FormatDate(Data[Key].Age);
-					var Difference = DateDifference(date['F'], FormatedDate['F'], 2);
+					var FD = FormatDate(VALUE);
+					var DD = DateDifference(D['F'], FD['F'], 2);
 					
 					// AGE IS 17 OR HIGHER & 85 OR LOWER
-					if (Difference['Y'] >= 17 && Difference['Y'] <= 85)
+					if (DD['Y'] >= 17 && DD['Y'] <= 85)
 					{				
-						ValidationSuccessfulData[Key] = Data[Key].Age;
+						ValidationSuccessfulData[Key] = VALUE;
 					}
 					// AGE IS HIGHER THAN 85
-					else if (Difference['Y'] > 85)
+					else if (DD['Y'] > 85)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(5);
+						ValidationFailedStatus.push(ECODE || 5);
 					}
 					else
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(6);
+						ValidationFailedStatus.push(ECODE || 6);
+					}
+				}
+			
+				// IF CONTAINS AGE 16
+				if ('Age16' in Data[Key])
+				{
+					// FORMAT DATE & GET DIFFERENCE
+					var FD = FormatDate(VALUE);
+					var DD = DateDifference(D['F'], FD['F'], 2);
+					
+					// 17 WITHIN 2 WEEKS
+					if (DD['Y'] == 16 && DD['D'] >= -14 && DD['D'] < 0)
+					{				
+						ValidationSuccessfulData[Key] = VALUE;
+					}
+					// NOT 17 WITHIN 2 WEEKS
+					else
+					{
+						ValidationStatus = false;
+						ValidationFailedData.push(Key);
+						ValidationFailedStatus.push(ECODE || 7);
 					}
 				}
 				
@@ -93,47 +114,100 @@
 				// IF CONTAINS REQUIRED
 				if('Required' in Data[Key])
 				{
-					if ($('[data-count="'+Key+'"]').val() != "")
+					if (VALUE != "")
 					{
-						ValidationSuccessfulData[Key] = Data[Key].Required;
+						ValidationSuccessfulData[Key] = VALUE;
 					}
 					else
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(8);
+						ValidationFailedStatus.push(ECODE || 8);
 					}
 				}
-		
+				
+				// [>TEMPLATE<] RANGE INPUT VALIDATION
+				if ('Range' in Data[Key])
+				{
+					if (VALUE < OPTION || 10)
+					{
+						ValidationStatus = false;
+						ValidationFailedData.push(Key);
+						ValidationFailedStatus.push(ECODE || 14);
+					}
+					else
+					{
+						ValidationSuccessfulData[Key] = VALUE;
+					}
+				}
+				
 				//		VALIDATION > CREDENTIALS
-			
+				
+				// LOGIN > IF CONTAINS CREDENTAIL
+				if('LoginCredential' in Data[Key])
+				{
+					// EMAIL ADDRESS LOGIN
+					if(/^(\w+|\d+)([\.\-!#$%&'*+\/=?^_`{|}~]?([a-z]|[0-9]))*@\w+([\.-]?\w+)*(\.\w{1,3})+$/i.exec(VALUE) !== null)
+					{
+						ValidationSuccessfulData[Key] = VALUE;
+					}
+					// ELSE IF PHONE LOGIN
+					else if(/^[0-9\'\- ]{11,13}$/i.exec(VALUE) !== null)
+					{
+						ValidationSuccessfulData[Key] = VALUE;
+					}
+					else
+					{
+						ValidationStatus = false;
+						ValidationFailedData.push(Key);	
+						ValidationFailedStatus.push(ECODE || 9);						
+					}
+				}
+				
+				// LOGIN > IF CONTAINS PASSWORD
+				if('LoginPassword' in Data[Key])
+				{
+					// IF PASSWORD VALID
+					if(VALUE.length < 8)
+					{
+						ValidationStatus = false;
+						ValidationFailedData.push(Key);
+						ValidationFailedStatus.push(ECODE || 1);
+					}
+					else
+					{
+						ValidationSuccessfulData[Key] = VALUE;
+					}
+					
+				}
+				
 				// IF CONTAINS EMAIL VALIDATION
 				if('Email' in Data[Key])
 				{
-					if(/^(\w+|\d+)([\.\-!#$%&'*+\/=?^_`{|}~]?([a-z]|[0-9]))*@\w+([\.-]?\w+)*(\.\w{1,3})+$/i.exec(Data[Key].Email) === null)
+					if(/^(\w+|\d+)([\.\-!#$%&'*+\/=?^_`{|}~]?([a-z]|[0-9]))*@\w+([\.-]?\w+)*(\.\w{1,3})+$/i.exec(VALUE) === null)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(10);
+						ValidationFailedStatus.push(ECODE || 10);
 					}
 					else
 					{
-						ValidationSuccessfulData[Key] = Data[Key].Email;
+						ValidationSuccessfulData[Key] = VALUE;
 					}
 				}
 				
 				// IF CONTAINS PHONE VALIDATION
 				if ('Phone' in Data[Key])
 				{
-					if(/^[0-9\'\- ]{11,13}$/i.exec(Data[Key].Phone) !== null)
+					if(/^[0-9\'\- ]{11,13}$/i.exec(VALUE) !== null)
 					{
-						ValidationSuccessfulData[Key] = Data[Key].Phone;
+						ValidationSuccessfulData[Key] = VALUE;
 					}
 					else
 					{
 						ValidationStatus = false;
-						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(11);						
+						ValidationFailedData.push(Key);	
+						ValidationFailedStatus.push(ECODE || 11);						
 					}
 				}
 				
@@ -141,23 +215,24 @@
 				if ('Password' in Data[Key])
 				{
 					// CHECK PASSWORD LENGTH MINIMUN 8 CHARACTERS
-					if(Data[Key].Password.length < 8)
+					if(VALUE.length < 8)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(1);
+						ValidationFailedStatus.push(ECODE || 1);
 					}
 					else
 					{
 						// CHECK PASSWORD CONTAINS 1+ UPPER CASE CHARACTERS
-						if (Data[Key].Password.replace(/[^A-Z]/g, "").length < 1)
+						if (VALUE.replace(/[^A-Z]/g, "").length < 1)
 						{
 							ValidationStatus = false;
 							ValidationFailedData.push(Key);
+							ValidationFailedStatus.push(ECODE || 1);
 						}
 						else
 						{
-							ValidationSuccessfulData[Key] = Data[Key].Password;
+							ValidationSuccessfulData[Key] = VALUE;
 						}
 					}
 				}
@@ -167,46 +242,42 @@
 				{
 					// PASSWORDS CALLED TO VALIDATE PASSWORDS ARE MATCHING
 					var Password = $('[data-validation="Password"]').val();
-					var Password2 = Data[Key].Password2;
 					
-					if (Password != Password2 || Password == '')
+					if (Password != VALUE || Password == '')
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(2);
+						ValidationFailedStatus.push(ECODE || 2);
 					}
 					else
 					{
-						ValidationSuccessfulData[Key] = Data[Key].PasswordMatch;
+						ValidationSuccessfulData[Key] = VALUE;
 					}
 				}
 				
 				// IF CONTAINS POSTCODE VALIDATION
 				if('Postcode' in Data[Key])
 				{
-					var Country = $('[data-validation="Postcode"]').attr('data-region');
-					var Postcode = $('[data-validation="Postcode"]').val();
-					
-					if(PostcodeValidation(Data[Key].Postcode, Country))
+					if(PostcodeValidation(VALUE, OPTION || 'GB'))
 					{
-						ValidationSuccessfulData[Key] = Data[Key].Postcode;
+						ValidationSuccessfulData[Key] = VALUE;
 					}
 					else
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(13);
+						ValidationFailedStatus.push(ECODE || 13);
 					}
 				}
 			}
 		}
 			
-		// IF DATA TAG IN VALIDATION ARRAY IS FALSE SHOW INVALID
+		// IF DATA TAG IN FALSE VALIDATION ARRAY SHOW INVALID
 		for (i = 0; i < ValidationFailedData.length; i++)
 		{
-			$('[data-count="'+ValidationFailedData[i]+'"]').css('border-bottom', '2px solid red');
+			$('[data-validationcount="'+ValidationFailedData[i]+'"]').css('border-bottom', '2px solid red');
 			
-			$('[data-count="'+ValidationFailedData[i]+'"]').after('<p class="ValidationErrorMessage_Visual">'+ValidationErrorCodes(ValidationFailedStatus[i])+'</p>');
+			$('[data-validationcount="'+ValidationFailedData[i]+'"]').after('<p class="ValidationErrorMessage_Visual">'+ValidationErrorCodes(ValidationFailedStatus[i])+'</p>');
 		}
 		
 		ValidationSuccessfulData = JSON.stringify(ValidationSuccessfulData);
@@ -228,60 +299,64 @@
 	{
 		switch(ValidationCode)
 		{
-			case 1:
-				ValidationStatus = 'Password <b>Must</b> Contain at least <b>8</> Characters and <b>1</b> Capital Letter';
+			case (1 || '1'):
+				ValidationStatus = 'Password Must Contain at least <b>8</b> Characters and <b>1</b> Capital Letter';
 				break;
 				
-			case 2:
+			case (2 || '2'):
 				ValidationStatus = 'Passwords do not match';
 				break;
 				
-			case 3:
-				ValidationStatus = '<b>Cannot</b> Have a Date Previous to Today';
+			case (3 || '3'):
+				ValidationStatus = 'Policy Start Date Cannot Have a Date Previous to Today';
 				break;
 				
-			case 4:
-				ValidationStatus = '<b>Cannot</b> be Over <b>30 Days</b>';
+			case (4 || '4'):
+				ValidationStatus = 'Policy Start Date Cannot be Over <b>30 Days</b>';
 				break;
 				
-			case 5:
-				ValidationStatus = 'Invalid Age - <b>Cannot</b> be over <b>85</b>';
+			case (5 || '5'):
+				ValidationStatus = 'Invalid Cilent Age - Cilent Cannot be over <b>85</b>';
 				break;
 				
-			case 6:
-				ValidationStatus = 'Invalid Age - <b>Cannot</b> be under <b>17</b>';
+			case (6 || '6'):
+				ValidationStatus = 'Invalid Cilent Age - Cilent Cannot be under <b>17</b>';
 				break;
 				
-			case 7:
-				ValidationStatus = 'Invalid Age - 16 Years Old & More Than 2 Weeks Until Birthday';
+			case (7 || '7'):
+				ValidationStatus = 'Invalid Cilent Age - Cilent is 16 & More Than 2 Weeks Until Birthday';
 				break;
 				
-			case 8:
-				ValidationStatus = 'Required Field - Highlighted Fields <b>Must</b> Be Completed';
+			case (8 || '8'):
+				ValidationStatus = 'Required Field - Highlighted Fields Must Be Completed';
 				break;
 				
-			case 9:
+			case (9 || '9'):
 				ValidationStatus = 'Email Address or Phone Number Not Recognized';
 				break;
 				
-			case 10:
-				ValidationStatus = 'Please Enter a <b>Valid</b> Email Address';
+			case (10 || '10'):
+				ValidationStatus = 'Please Enter a Valid Email Address';
 				break;
 				
-			case 11:
-				ValidationStatus = 'Please Enter a <b>Valid</b> Phone Number';
+			case (11 || '11'):
+				ValidationStatus = 'Please Enter a Valid Phone Number';
 				break;
 				
-			case 12:
+			case (12 || '12'):
 				ValidationStatus = 'Please Enter a Valid Landline Number';
 				break;
 				
-			case 13:
+			case (13 || '13'):
 				ValidationStatus = 'Please Enter a <b>Valid</b> Postcode';
 				break;
 				
-			case 14:
-				ValidationStatus = 'Please Enter a Valid Mobile Number';
+			case (14 || '14'):
+				ValidationStatus = 'Please Select a Value Higher than 10';
+				break;
+				
+			case (15 || '15'):
+				ValidationStatus = 'Example Custom Error Message';
 				break;
 		}
 		
