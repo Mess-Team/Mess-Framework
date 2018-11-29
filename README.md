@@ -3,7 +3,7 @@ Mess Framework information that will slowly build up over time as the project ge
 
 
 ## Data Attributes
-Below is all of the Data Attributes, what I plan for their uses and plan to stop overlapping attributes and over used functions. 
+Below is a list of the following attributes that are currently being developed or have a place within the __MESS__ framework. Explanations and examples should provided. However not all attributes will have fully flesh out information until they have been set as the standard. 
 
 ### Data Validation
 Used for setting a Validation rule to a single input element. An example of this would be `data-validation="Required"` which would then make sure the input element field was not empty.
@@ -14,7 +14,7 @@ Validation is checked on __change__ and __keypress__ on individual input element
 ```
 
 ### Data Validation Count
-Used within the automatic buidling of the __Data__ object for which each input has the `data-validation=""` attribute. The count attribute is built by a loop which checks and searches for all elements associated with Validation. 
+Used within the automatic building of the __Data__ object for which each input has the `data-validation=""` attribute. The count attribute is built by a loop which checks and searches for all elements associated with Validation. 
 The number associated within the count attribute is the target indiviual used to set error messages and all element visualisations.
 
 > [NOTE] Manual addition of `data-validationCount` value will be refactored into the automatically generated value should the element contain a `data-validation` attribute.
