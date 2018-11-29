@@ -1,9 +1,16 @@
 # Mess-Framework
 Mess Framework information that will slowly build up over time as the project gets more updates and features. You can read below the descriptions of Data Attributes, Files, Methods, Naming Principles and much more. (<i>This is being worked on secondary to the actual project</i>)
 
-
 ## Data Attributes
-Below is a list of the following attributes that are currently being developed or have a place within the __MESS__ framework. Explanations and examples should provided. However not all attributes will have fully flesh out information until they have been set as the standard. 
+Below is a list of the following attributes that are currently being developed or have a place within the __MESS__ framework. Explanations and examples should provided. However not all attributes will have fully flesh out information until they have been set as the standard.
+
+- [VALIDATION ATTRIBUTES](https://github.com/Mess-Team/Mess-Framework#data-validation)
+- - [Data Validation](https://github.com/Mess-Team/Mess-Framework#data-validation)
+- - [Data Validation Count](https://github.com/Mess-Team/Mess-Framework#data-validation-count)
+- - [Data Validation Option](https://github.com/Mess-Team/Mess-Framework#data-validation-option)
+- - [Data Validate](https://github.com/Mess-Team/Mess-Framework#data-validate)
+- - [Data Validatiion Status](https://github.com/Mess-Team/Mess-Framework#data-validation-status)
+- - [Data Validation ECode](https://github.com/Mess-Team/Mess-Framework#data-validation-ecode)
 
 ### Data Validation
 Used for setting a Validation rule to a single input element. An example of this would be `data-validation="Required"` which would then make sure the input element field was not empty.
