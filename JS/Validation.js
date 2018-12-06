@@ -1,120 +1,152 @@
+/*
+	jshint 
+	
+	eqnull: true,
+	noempty: true,
+	eqeqeq: true,
+	laxbreak: true,
+	curly: true,
+	esnext: true,
+	undef: true,
+	jquery: true
+	
+*/
+	
 	// VALIDATION FUNCTION
 	function Validation(ValidationStatus, Data)
 	{
-		// START VALIDATION
-		if(ValidationStatus == '')
-		{
-			var ValidationStatus = true;
-			var ValidationFailedData = [];
-			var ValidationSuccessfulData = {};
-			var ValidationFailedStatus = [];
-			
-			// SET CURRENT DATE & FORMAT
-			var CurrentDate = new Date();
-			var D = FormatDate(CurrentDate);
-		}
+		const CURRENTDATE = new Date();
+		const DATE = FormatDate(CURRENTDATE);
+		let ValidationFailedData = [];
+		let ValidationSuccessfulData = {};
+		let ValidationFailedStatus = [];
+		ValidationStatus = true;
 		
 		// LOOP EACH ITEM
-		for (var Key in Data )
+		for (let Key in Data )
 		{
 			// LOOP EACH ITEM WITHIN OBJECT
-			for (var Keys in Data[Key])
+			for (let Keys in Data[Key])
 			{
-				// PASSED OPTIONAL VARIABLES
-				var RULE = Keys;
-				var INPUT = $('[data-validationcount="'+Key+'"]');
-				var VALUE = INPUT.val();
-				var ECODE = INPUT.attr('data-validationmessage'); // OR 'DEFAULT';
-				var OPTION = INPUT.attr('data-validationoption'); // OR 'DEFAULT';
+				// BASE VARIABLES
+				const RULE = Keys.toUpperCase();
+				const INPUT = $('[data-validationcount="'+Key+'"]');
+				const VALUE = INPUT.val();
+				const ECODE = INPUT.attr('data-validationmessage');
+				const FORMATED = FormatDate(VALUE);
+				const STAGE = (RULE === 'PROCEEDINGDATE' ? 1 : 2);
+				const DIFF = DateDifference(DATE.F, FORMATED.F, STAGE);
+				const OPTION = (INPUT.attr('data-validationoption') == undefined ? 0 : INPUT.attr('data-validationoption').toUpperCase());
+				//const OPTION = ValidationOptions(INPUT.attr('data-validationoption'));
+
+				// FIXME: MULTIPLE OPTIONAL ADDATIONAL RULE VALIDATION
+				console.log('FULL OPTION : '+OPTION);
+				if (OPTION !== 0)
+				{
+					let VOT = ValidationOptions(OPTION)
+					console.log('OPTION RULE : '+VOT.RULE);
+					console.log('OPTIONS AMOUNT: '+VOT.OPTIONS.length);
+					console.log('OPTIONS : '+VOT.OPTIONS);
+				}
 				
-				// SET VALIDATION VISUAL STATUS
+				// VALIDATION VISUAL STATUS
 				INPUT.css('border-bottom','');
-				INPUT.next('.ValidationErrorMessage_Visual').hide();
+				INPUT.next('.ValidationErrorMessage_Visual').remove();
 			
-				// IF CONTAINS PROCEEDINGDATE
-				if('ProceedingDate' in Data[Key])
+				// VALIDATION RULE > PROCEEDING START DATE
+				if(RULE === 'PROCEEDINGDATE')
 				{
-					FD = FormatDate(VALUE);
-					if (VALUE == "")
+					if (VALUE === "")
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
 					}
-					// DATE IS BEFORE TODAY
-					else if (DateDifference(D['F'], FD['F'], 1) < 0)
+					// BEFORE TODAY [DAYS < 0]
+					else if (DIFF < 0)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 3);
+						ValidationFailedStatus.push(ECODE || '3');
 					}
-					// DATE IS OVER 30 DAYS
-					else if (DateDifference(D['F'], FD['F'], 1) > 30)
+					// OVER 30 DAYS [DAYS > 30]
+					else if (DIFF > 30)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 4);
+						ValidationFailedStatus.push(ECODE || '4');
 					}
-					// DATE IS VALID
+					// VALID DATE
 					else
 					{
 						ValidationSuccessfulData[Key] = VALUE;
 					}
 				}
 				
-				// IF CONTAINS AGE VALIDATION
-				if('Age' in Data[Key])
+				// VALIDATION RULE > AGE
+				if(RULE === 'AGE')
 				{
-					// FORMAT DATE & GET DIFFERENCE
-					var FD = FormatDate(VALUE);
-					var DD = DateDifference(D['F'], FD['F'], 2);
+					let MinimumAge;
+					let MaximumAge;
+					let BirthdayCheck;
 					
-					// AGE IS 17 OR HIGHER & 85 OR LOWER
-					if (DD['Y'] >= 17 && DD['Y'] <= 85)
-					{				
-						ValidationSuccessfulData[Key] = VALUE;
-					}
-					// AGE IS HIGHER THAN 85
-					else if (DD['Y'] > 85)
+					if (OPTION === 'CUSTOM OPTION 1' || OPTION === 'C1')
 					{
-						ValidationStatus = false;
-						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 5);
+						MinimumAge = 23;
+						MaximumAge = 75;
+					}
+					else if (OPTION === 'CUSTOM OPTION 2' || OPTION === 'C1')
+					{
+						MinimumAge = 16;
+						MaximumAge = 25;
+						BirthdayCheck = true;
 					}
 					else
 					{
-						ValidationStatus = false;
-						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 6);
+						MinimumAge = 16;
+						MaximumAge = 75;
 					}
-				}
-			
-				// IF CONTAINS AGE 16
-				if ('Age16' in Data[Key])
-				{
-					// FORMAT DATE & GET DIFFERENCE
-					var FD = FormatDate(VALUE);
-					var DD = DateDifference(D['F'], FD['F'], 2);
 					
-					// 17 WITHIN 2 WEEKS
-					if (DD['Y'] == 16 && DD['D'] >= -14 && DD['D'] < 0)
-					{				
-						ValidationSuccessfulData[Key] = VALUE;
+					// AGE FALLS IN BETWEEN MIN & MAX
+					if (DIFF.YEAR >= MinimumAge && DIFF.YEAR <= MaximumAge)
+					{
+						if (DIFF.YEAR === 16)
+						{
+							if (DIFF.DAY >= -14 && DIFF.DAY < 0)
+							{				
+								ValidationSuccessfulData[Key] = VALUE;
+							}
+							else
+							{
+								ValidationStatus = false;
+								ValidationFailedData.push(Key);
+								ValidationFailedStatus.push(ECODE || '7');
+							}
+						}
+						else
+						{
+							ValidationSuccessfulData[Key] = VALUE;
+						}
+						
 					}
-					// NOT 17 WITHIN 2 WEEKS
+					// AGE IS MORE THAN MAXIMUM
+					else if (DIFF.YEAR > MaximumAge)
+					{
+						ValidationStatus = false;
+						ValidationFailedData.push(Key);
+						ValidationFailedStatus.push(ECODE || '5');
+					}
 					else
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 7);
+						ValidationFailedStatus.push(ECODE || '6');
 					}
 				}
 				
-				//		VALIDATION > REQUIRES
-				
-				// IF CONTAINS REQUIRED
-				if('Required' in Data[Key])
+				// VALIDATION RULE > REQUIRED
+				if(RULE === 'REQUIRED')
 				{
-					if (VALUE != "")
+					if (VALUE !== "")
 					{
 						ValidationSuccessfulData[Key] = VALUE;
 					}
@@ -122,18 +154,27 @@
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 8);
+						ValidationFailedStatus.push(ECODE || '8');
 					}
 				}
 				
-				// [>TEMPLATE<] RANGE INPUT VALIDATION
-				if ('Range' in Data[Key])
+				// VALIDATION RULE > RANGE [DEFAULT]
+				if (RULE === 'RANGE')
 				{
-					if (VALUE < OPTION || 10)
+					let MinimumRange;
+					let MaximumRange;
+					
+					if (!OPTION)
+					{
+						MinimumRange = -1;
+						MaximumRange = 50;
+					}
+					
+					if (VALUE <= MinimumRange || VALUE >= MaximumRange)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 14);
+						ValidationFailedStatus.push(ECODE || '14');
 					}
 					else
 					{
@@ -141,17 +182,15 @@
 					}
 				}
 				
-				//		VALIDATION > CREDENTIALS
-				
-				// LOGIN > IF CONTAINS CREDENTAIL
-				if('LoginCredential' in Data[Key])
+				// VALIDATION RULE > LOGIN > LOGIN CREDENTIAL
+				if(RULE === 'LOGINCREDENTIAL')
 				{
-					// EMAIL ADDRESS LOGIN
+					// SUBMISSION VALIDATION AS EMAIL
 					if(/^(\w+|\d+)([\.\-!#$%&'*+\/=?^_`{|}~]?([a-z]|[0-9]))*@\w+([\.-]?\w+)*(\.\w{1,3})+$/i.exec(VALUE) !== null)
 					{
 						ValidationSuccessfulData[Key] = VALUE;
 					}
-					// ELSE IF PHONE LOGIN
+					// SUBMISSION VALIDATION AS PHONE NUMBER
 					else if(/^[0-9\'\- ]{11,13}$/i.exec(VALUE) !== null)
 					{
 						ValidationSuccessfulData[Key] = VALUE;
@@ -160,44 +199,42 @@
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);	
-						ValidationFailedStatus.push(ECODE || 9);						
+						ValidationFailedStatus.push(ECODE || '9');						
 					}
 				}
 				
-				// LOGIN > IF CONTAINS PASSWORD
-				if('LoginPassword' in Data[Key])
+				// VALIDATION RULE > EMAIL
+				if(RULE === 'EMAIL')
 				{
-					// IF PASSWORD VALID
-					if(VALUE.length < 8)
-					{
-						ValidationStatus = false;
-						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 1);
-					}
-					else
-					{
-						ValidationSuccessfulData[Key] = VALUE;
-					}
+					const SPLIT_EMAIL = VALUE.split('@').pop();
+					const SPLIT_EMAIL_DOMAIN = SPLIT_EMAIL.split('.');
 					
-				}
-				
-				// IF CONTAINS EMAIL VALIDATION
-				if('Email' in Data[Key])
-				{
+					// TODO: ENABLE DOMAIN EXTENSION VALIDATION
+
 					if(/^(\w+|\d+)([\.\-!#$%&'*+\/=?^_`{|}~]?([a-z]|[0-9]))*@\w+([\.-]?\w+)*(\.\w{1,3})+$/i.exec(VALUE) === null)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 10);
+						ValidationFailedStatus.push(ECODE || '10');
 					}
+					// VALID EMAIL 
 					else
 					{
-						ValidationSuccessfulData[Key] = VALUE;
+						if (OPTION && SPLIT_EMAIL !== OPTION)
+						{
+							ValidationStatus = false;
+							ValidationFailedData.push(Key);
+							ValidationFailedStatus.push(ECODE || '16');
+						}
+						else
+						{
+							ValidationSuccessfulData[Key] = VALUE;
+						}
 					}
 				}
 				
-				// IF CONTAINS PHONE VALIDATION
-				if ('Phone' in Data[Key])
+				// VALIDATION RULE > PHONE
+				if (RULE === 'PHONE')
 				{
 					if(/^[0-9\'\- ]{11,13}$/i.exec(VALUE) !== null)
 					{
@@ -207,28 +244,27 @@
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);	
-						ValidationFailedStatus.push(ECODE || 11);						
+						ValidationFailedStatus.push(ECODE || '11');						
 					}
 				}
 				
-				// IF CONTAINS PASSSWORD VALIDATION
-				if ('Password' in Data[Key])
+				// VALIDATION RULE > PASSWORD
+				if (RULE === 'PASSWORD')
 				{
-					// CHECK PASSWORD LENGTH MINIMUN 8 CHARACTERS
 					if(VALUE.length < 8)
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 1);
+						ValidationFailedStatus.push(ECODE || '1');
 					}
 					else
 					{
-						// CHECK PASSWORD CONTAINS 1+ UPPER CASE CHARACTERS
+						// UPPERCASE VALIDATION
 						if (VALUE.replace(/[^A-Z]/g, "").length < 1)
 						{
 							ValidationStatus = false;
 							ValidationFailedData.push(Key);
-							ValidationFailedStatus.push(ECODE || 1);
+							ValidationFailedStatus.push(ECODE || '1');
 						}
 						else
 						{
@@ -237,17 +273,14 @@
 					}
 				}
 				
-				// IF CONTAINS PASSWORD CONFIRMATION VALIDATION
-				if ('Password2' in Data[Key])
+				// VALIDATION RULE > PASSWORD2 
+				if (RULE === 'PASSWORD2')
 				{
-					// PASSWORDS CALLED TO VALIDATE PASSWORDS ARE MATCHING
-					var Password = $('[data-validation="Password"]').val();
-					
-					if (Password != VALUE || Password == '')
+					if ($('[data-validation="Password"]').val() !== VALUE || $('[data-validation="Password"]').val() === '')
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 2);
+						ValidationFailedStatus.push(ECODE || '2');
 					}
 					else
 					{
@@ -255,10 +288,10 @@
 					}
 				}
 				
-				// IF CONTAINS POSTCODE VALIDATION
-				if('Postcode' in Data[Key])
+				// VALIDATION RULE > POSTCODE/AREACODE
+				if(RULE === 'POSTCODE')
 				{
-					if(PostcodeValidation(VALUE, OPTION || 'GB'))
+					if(AreacodeValidation(VALUE, OPTION || 'GB'))
 					{
 						ValidationSuccessfulData[Key] = VALUE;
 					}
@@ -266,97 +299,187 @@
 					{
 						ValidationStatus = false;
 						ValidationFailedData.push(Key);
-						ValidationFailedStatus.push(ECODE || 13);
+						ValidationFailedStatus.push(ECODE || '13');
 					}
 				}
 			}
 		}
 			
-		// IF DATA TAG IN FALSE VALIDATION ARRAY SHOW INVALID
-		for (i = 0; i < ValidationFailedData.length; i++)
+		// DISPLAY ANY ERROR CASES
+		for (let i = 0; i < ValidationFailedData.length; i += 1)
 		{
 			$('[data-validationcount="'+ValidationFailedData[i]+'"]').css('border-bottom', '2px solid red');
-			
-			$('[data-validationcount="'+ValidationFailedData[i]+'"]').after('<p class="ValidationErrorMessage_Visual">'+ValidationErrorCodes(ValidationFailedStatus[i])+'</p>');
+			$('[data-validationcount="'+ValidationFailedData[i]+'"]').after('<p class="ValidationErrorMessage_Visual">'+ValidationCodes(ValidationFailedStatus[i])+'</p>');
 		}
 		
 		ValidationSuccessfulData = JSON.stringify(ValidationSuccessfulData);
 		ValidationStatus = true;
 		
 		// RETURN STATUS
-		var ValidationOutput = [ValidationStatus,ValidationFailedData,ValidationSuccessfulData];
+		let ValidationOutput = [ValidationStatus,ValidationFailedData,ValidationSuccessfulData];
 		return ValidationOutput;
 	}
 	
-	// VALIDATES POSTCODE
-	function PostcodeValidation(...P) { 
-		var PostcodeRegEx = new RegExp(AreacodeRegex(P[1]));
-		return PostcodeRegEx.test(P[0]); 
+	function ValidationOptions(OPTION)
+	{
+		let ValidationOption = [];
+		let ValidationOptionRule;
+		let ValidationOptionsBreakdown;
+		
+		if (OPTION.search('CONTAINS:') > -1 )
+		{
+			ValidationOptionRule = 'CONTAINS';
+			ValidationOptionsBreakdown = OPTION.split('CONTAINS:').pop();
+			ValidationOption = ValidationOptionsBreakdown .split(',');
+		}
+		else if (OPTION.search('!CONTAINS:') > -1 )
+		{
+			ValidationOptionRule = '!CONTAINS';
+			ValidationOptionsBreakdown = OPTION.split('!CONTAINS:').pop();
+			ValidationOption = ValidationOptionsBreakdown.split(',');
+		}
+		// NO VALIDATION OPTIONAL RULE SET
+		else if (!OPTION)
+		{
+			return false;
+		}
+		// VALIDATION OPTIONAL RULE SET BUT NOT FOUND
+		else 
+		{
+			return false;
+		}
+		
+		const VALIDATION_OPTION_OUTPUT = {
+			'RULE' : ValidationOptionRule,
+			'OPTIONS' : ValidationOption,
+		};
+		
+		return VALIDATION_OPTION_OUTPUT;
+		
+	}
+	
+	// VALIDATE AREACODE
+	function AreacodeValidation(POSTCODE, POSTCODE_VALIDATION_RULE) { 
+		let AreacodeRegEx = new RegExp(AreacodeRegexList(POSTCODE_VALIDATION_RULE));
+		return AreacodeRegEx.test(POSTCODE); 
+	}
+	
+	// CALCULATE DIFFERENCE IN TWO DATES
+	function DateDifference(DATEFULL, FORMATTEDFULL, STAGE)
+	{
+		const DATE = new Date(DATEFULL);
+		const VALIDATION_DATE = new Date(FORMATTEDFULL);
+		
+		// DIFFERENCE OF DATE DAYS ONLY
+		if (STAGE === 1)
+		{
+			return Math.floor((Date.UTC(VALIDATION_DATE.getFullYear(), VALIDATION_DATE.getMonth(), VALIDATION_DATE.getDate()) - Date.UTC(DATE.getFullYear(), DATE.getMonth(), DATE.getDate()) ) / (1000 * 60 * 60 * 24));
+		}
+		// DIFFERENCE OF DATE FULL 
+		else if (STAGE === 2)
+		{
+			let YearDifference = DATE.getFullYear() - VALIDATION_DATE.getFullYear();
+			let MonthDifference = DATE.getMonth() - VALIDATION_DATE.getMonth();
+			let DayDifference = DATE.getDate() - VALIDATION_DATE.getDate();
+			
+			// REMOVE ADDITIONAL YEAR DIFFERENCE > MONTH
+			if (MonthDifference < 0)
+			{
+				MonthDifference *= - 1;
+				MonthDifference = 12 - MonthDifference;
+		
+				YearDifference = YearDifference - 1;
+			}
+			
+			// REMOVE ADDITIONAL YEAR DIFFERENCE > DAY
+			if (DayDifference < 0)
+			{
+				YearDifference = YearDifference - 1;
+			}
+			
+			const DIFFERENCE = {
+				'MONTH': MonthDifference,
+				'YEAR': YearDifference,
+				'DAY': DayDifference
+			};
+			
+			return DIFFERENCE;
+		}
 	}
 	
 	// VALIDATION ERROR CODES
-	function ValidationErrorCodes(ValidationCode)
+	function ValidationCodes(ValidationCode)
 	{
+		let ValidationStatus;
+		
 		switch(ValidationCode)
 		{
-			case (1 || '1'):
-				ValidationStatus = 'Password Must Contain at least <b>8</b> Characters and <b>1</b> Capital Letter';
+			case '1':
+				ValidationStatus = 'Password Must Contain at least 8 Characters and <b>1</b> Capital Letter';
 				break;
 				
-			case (2 || '2'):
+			case '2':
 				ValidationStatus = 'Passwords do not match';
 				break;
 				
-			case (3 || '3'):
-				ValidationStatus = 'Policy Start Date Cannot Have a Date Previous to Today';
+			case '3':
+				ValidationStatus = 'Proceeding Start Date Cannot Have a Date Previous to Today';
 				break;
 				
-			case (4 || '4'):
-				ValidationStatus = 'Policy Start Date Cannot be Over <b>30 Days</b>';
+			case '4':
+				ValidationStatus = 'Proceeding Start Date Cannot be Over <b>30 Days</b>';
 				break;
 				
-			case (5 || '5'):
-				ValidationStatus = 'Invalid Cilent Age - Cilent Cannot be over <b>85</b>';
+			case '5':
+				ValidationStatus = 'Invalid Age - Age Passed the Maximum';
 				break;
 				
-			case (6 || '6'):
-				ValidationStatus = 'Invalid Cilent Age - Cilent Cannot be under <b>17</b>';
+			case '6':
+				ValidationStatus = 'Invalid Age - Age Not Passed the Minimum';
 				break;
 				
-			case (7 || '7'):
-				ValidationStatus = 'Invalid Cilent Age - Cilent is 16 & More Than 2 Weeks Until Birthday';
+			case '7':
+				ValidationStatus = 'Invalid Age - 16 & More Than 2 Weeks Until Birthday';
 				break;
 				
-			case (8 || '8'):
+			case '8':
 				ValidationStatus = 'Required Field - Highlighted Fields Must Be Completed';
 				break;
 				
-			case (9 || '9'):
+			case '9':
 				ValidationStatus = 'Email Address or Phone Number Not Recognized';
 				break;
 				
-			case (10 || '10'):
+			case '10':
 				ValidationStatus = 'Please Enter a Valid Email Address';
 				break;
 				
-			case (11 || '11'):
+			case ('11'):
 				ValidationStatus = 'Please Enter a Valid Phone Number';
 				break;
 				
-			case (12 || '12'):
+			case '12':
 				ValidationStatus = 'Please Enter a Valid Landline Number';
 				break;
 				
-			case (13 || '13'):
-				ValidationStatus = 'Please Enter a <b>Valid</b> Postcode';
+			case '13':
+				ValidationStatus = 'Please Enter a Valid Postcode';
 				break;
 				
-			case (14 || '14'):
-				ValidationStatus = 'Please Select a Value Higher than 10';
+			case '14':
+				ValidationStatus = 'Please Select a Value';
 				break;
 				
-			case (15 || '15'):
+			case '15':
 				ValidationStatus = 'Example Custom Error Message';
+				break;
+				
+			case '16':
+				ValidationStatus = 'Not an accepted Email';
+				break;
+				
+			default:
+				ValidationStatus = 'Invalid Input';
 				break;
 		}
 		
@@ -364,9 +487,9 @@
 	}
 	
 	// REGEX COUNTRY AREA CODES
-	function AreacodeRegex(Country)
+	function AreacodeRegexList(Country)
 	{
-		AreacodeRegexArray = {
+		let AreacodeRegexArray = {
 
 			'GB' : '^(([gG][iI][rR] {0,}0[aA]{2})|((([a-pr-uwyzA-PR-UWYZ][a-hk-yA-HK-Y]?[0-9][0-9]?)|(([a-pr-uwyzA-PR-UWYZ][0-9][a-hjkstuwA-HJKSTUW])|([a-pr-uwyzA-PR-UWYZ][a-hk-yA-HK-Y][0-9][abehmnprv-yABEHMNPRV-Y]))) {0,}[0-9][abd-hjlnp-uw-zABD-HJLNP-UW-Z]{2}))$',
 			'US' : '\d{5}([ \-]\d{4})?',
