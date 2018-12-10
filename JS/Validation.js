@@ -34,27 +34,17 @@
 				const VALUE = INPUT.val();
 				const ECODE = INPUT.attr('data-validationmessage');
 				const FORMATED = FormatDate(VALUE);
-				const STAGE = (RULE === 'PROCEEDINGDATE' ? 1 : 2);
+				const STAGE = (RULE === 'PSTARTDATE' ? 1 : 2);
 				const DIFF = DateDifference(DATE.F, FORMATED.F, STAGE);
-				const OPTION = (INPUT.attr('data-validationoption') == undefined ? 0 : INPUT.attr('data-validationoption').toUpperCase());
-				//const OPTION = ValidationOptions(INPUT.attr('data-validationoption'));
-
-				// FIXME: MULTIPLE OPTIONAL ADDATIONAL RULE VALIDATION
-				console.log('FULL OPTION : '+OPTION);
-				if (OPTION !== 0)
-				{
-					let VOT = ValidationOptions(OPTION)
-					console.log('OPTION RULE : '+VOT.RULE);
-					console.log('OPTIONS AMOUNT: '+VOT.OPTIONS.length);
-					console.log('OPTIONS : '+VOT.OPTIONS);
-				}
-				
+				const OPTION = (INPUT.attr('data-validationoption') === undefined ? 0 : INPUT.attr('data-validationoption'));
+				const OPTIONS = (OPTION === 0 ? false : ValidationOptions(OPTION));
+			
 				// VALIDATION VISUAL STATUS
 				INPUT.css('border-bottom','');
 				INPUT.next('.ValidationErrorMessage_Visual').remove();
 			
-				// VALIDATION RULE > PROCEEDING START DATE
-				if(RULE === 'PROCEEDINGDATE')
+				// VALIDATION RULE > P START DATE
+				if(RULE === 'PSTARTDATE')
 				{
 					if (VALUE === "")
 					{
@@ -89,12 +79,12 @@
 					let MaximumAge;
 					let BirthdayCheck;
 					
-					if (OPTION === 'CUSTOM OPTION 1' || OPTION === 'C1')
+					if (OPTIONS.OPTION === 'CUSTOM OPTION 1' || OPTIONS.OPTION === 'C1')
 					{
 						MinimumAge = 23;
 						MaximumAge = 75;
 					}
-					else if (OPTION === 'CUSTOM OPTION 2' || OPTION === 'C1')
+					else if (OPTIONS.OPTION === 'CUSTOM OPTION 2' || OPTIONS.OPTION === 'C2')
 					{
 						MinimumAge = 16;
 						MaximumAge = 25;
@@ -203,14 +193,27 @@
 					}
 				}
 				
+				// VALIDATION RULE > LOGIN > PASSWORD
+				if(RULE === 'LOGINPASSWORD')
+				{
+					if(VALUE.length < 8)
+					{
+						ValidationStatus = false;
+						ValidationFailedData.push(Key);
+						ValidationFailedStatus.push(ECODE || '1');
+					}
+					else
+					{
+						ValidationSuccessfulData[Key] = VALUE;
+					}
+				}
+				
 				// VALIDATION RULE > EMAIL
 				if(RULE === 'EMAIL')
 				{
-					const SPLIT_EMAIL = VALUE.split('@').pop();
-					const SPLIT_EMAIL_DOMAIN = SPLIT_EMAIL.split('.');
+					const SPLIT_EMAIL = (VALUE === '' ? false : VALUE.split('@').pop());
+					const ADDITIONAL_OPTIONS = (OPTIONS.RULE === 'STANDARD' ? true : ValidateOptions(OPTIONS, SPLIT_EMAIL, RULE));
 					
-					// TODO: ENABLE DOMAIN EXTENSION VALIDATION
-
 					if(/^(\w+|\d+)([\.\-!#$%&'*+\/=?^_`{|}~]?([a-z]|[0-9]))*@\w+([\.-]?\w+)*(\.\w{1,3})+$/i.exec(VALUE) === null)
 					{
 						ValidationStatus = false;
@@ -220,11 +223,11 @@
 					// VALID EMAIL 
 					else
 					{
-						if (OPTION && SPLIT_EMAIL !== OPTION)
+						if (!ADDITIONAL_OPTIONS)
 						{
 							ValidationStatus = false;
 							ValidationFailedData.push(Key);
-							ValidationFailedStatus.push(ECODE || '16');
+							ValidationFailedStatus.push(ECODE || '17');
 						}
 						else
 						{
@@ -291,9 +294,25 @@
 				// VALIDATION RULE > POSTCODE/AREACODE
 				if(RULE === 'POSTCODE')
 				{
-					if(AreacodeValidation(VALUE, OPTION || 'GB'))
+					const AREA = VALUE.split(' ').join('').slice(0, - 3);
+					const SECTOR = VALUE.substr(VALUE.length - 3);
+					const ADDITIONAL_OPTIONS = (OPTIONS.RULE === 'REGION' ? true : ValidateOptions(OPTIONS, AREA, RULE));
+					const REGION = (OPTIONS.RULE === 'REGION' ? ValidateOptions(OPTIONS, 0, RULE) : 'GB');
+
+					if(AreacodeValidation(VALUE, REGION))
 					{
-						ValidationSuccessfulData[Key] = VALUE;
+						if (!ADDITIONAL_OPTIONS)
+						{
+							ValidationStatus = false;
+							ValidationFailedData.push(Key);
+							ValidationFailedStatus.push(ECODE || '');
+						}
+						else
+						{
+							// FORMAT POSTCODE ON SUCCESS
+							INPUT.val(AREA.toUpperCase()+' '+SECTOR.toUpperCase());
+							ValidationSuccessfulData[Key] = VALUE;
+						}
 					}
 					else
 					{
@@ -302,6 +321,22 @@
 						ValidationFailedStatus.push(ECODE || '13');
 					}
 				}
+				
+				// VALIDATION RULE > LOCATE
+				if (RULE === 'LOCATE')
+				{
+					const FOUND = ValidateOptions(OPTIONS, 0, RULE)
+					
+					if (!FOUND)
+					{
+						alert(OPTIONS.OPTION+' has not been found!');
+					}
+					else
+					{
+						alert('Found '+FOUND+' occurance(s) of "'+OPTIONS.OPTION+'"');
+					}
+				}
+				
 			}
 		}
 			
@@ -313,29 +348,86 @@
 		}
 		
 		ValidationSuccessfulData = JSON.stringify(ValidationSuccessfulData);
-		ValidationStatus = true;
 		
 		// RETURN STATUS
 		let ValidationOutput = [ValidationStatus,ValidationFailedData,ValidationSuccessfulData];
 		return ValidationOutput;
 	}
 	
+	// VALIDATES VALUE BASED ON OPTIONAL RULE SETS
+	function ValidateOptions(OPTIONS, SEARCHABLE, RULE)
+	{
+		let ParameterFound = false;
+		let Method = (OPTIONS.RULE === 'INCLUDE' ? true : false);
+		let Status = false;
+		
+		// STOP TOUPPER FUNCTION BREAKING WTIH FALSY VALUE	
+		Status = (SEARCHABLE === false ? OPTIONS.OPTION = false : false);
+		
+		// OPTIONAL VALIDATION FOR POSTCODE AND EMAIL
+		if (RULE === 'POSTCODE' && OPTIONS.RULE !== 'REGION' || RULE === 'EMAIL')
+		{	
+			if (OPTIONS.OPTION)
+			{
+				for (let i = 0; i < OPTIONS.OPTION.length; i += 1)
+				{
+					ParameterFound = (OPTIONS.OPTION[i].toUpperCase().search(SEARCHABLE.toUpperCase()) > -1 ? Status = (true === Method) ? true : false : false);
+				}
+			}
+		}
+		// LOCATE ELEMENT PARAMETER PASSED
+		else if (OPTIONS.RULE === 'FIND')
+		{
+			if (OPTIONS.OPTION)
+			{
+				for (let i = 0; i < OPTIONS.OPTION.length; i += 1)
+				{
+					ParameterFound = ($(OPTIONS.OPTION[i]).size() >= 1 ? Status = $(OPTIONS.OPTION[i]).size() : false);
+				}
+			}
+		}
+		// POSTCODE REGION VALIDATION
+		else if (OPTIONS.RULE === 'REGION')
+		{
+			if (OPTIONS.OPTION)
+			{
+				Status = OPTIONS.OPTION;
+			}
+		}
+		
+		return Status;
+	}
+	
+	// BUILDS VALIDATION OPTIONAL RULE SETS
 	function ValidationOptions(OPTION)
 	{
 		let ValidationOption = [];
 		let ValidationOptionRule;
 		let ValidationOptionsBreakdown;
+		let ValidationOptionOutput;
 		
-		if (OPTION.search('CONTAINS:') > -1 )
+		if (OPTION.toUpperCase().search('INCLUDE:') > -1 )
 		{
-			ValidationOptionRule = 'CONTAINS';
-			ValidationOptionsBreakdown = OPTION.split('CONTAINS:').pop();
+			ValidationOptionRule = 'INCLUDE';
+			ValidationOptionsBreakdown = OPTION.toUpperCase().split('INCLUDE:').pop();
 			ValidationOption = ValidationOptionsBreakdown .split(',');
 		}
-		else if (OPTION.search('!CONTAINS:') > -1 )
+		else if (OPTION.toUpperCase().search('EXCLUDE:') > -1 )
 		{
-			ValidationOptionRule = '!CONTAINS';
-			ValidationOptionsBreakdown = OPTION.split('!CONTAINS:').pop();
+			ValidationOptionRule = 'EXCLUDE';
+			ValidationOptionsBreakdown = OPTION.toUpperCase().split('EXCLUDE:').pop();
+			ValidationOption = ValidationOptionsBreakdown.split(',');
+		}
+		else if (OPTION.toUpperCase().search('REGION:') > -1 )
+		{
+			ValidationOptionRule = 'REGION';
+			ValidationOptionsBreakdown = OPTION.toUpperCase().split('REGION:').pop();
+			ValidationOption = ValidationOptionsBreakdown.split(',');
+		}
+		else if (OPTION.search('FIND:') > -1 )
+		{
+			ValidationOptionRule = 'FIND';
+			ValidationOptionsBreakdown = OPTION.split('FIND:').pop();
 			ValidationOption = ValidationOptionsBreakdown.split(',');
 		}
 		// NO VALIDATION OPTIONAL RULE SET
@@ -346,22 +438,27 @@
 		// VALIDATION OPTIONAL RULE SET BUT NOT FOUND
 		else 
 		{
-			return false;
+			ValidationOptionOutput = {
+				'RULE' : 'STANDARD',
+				'OPTION' : OPTION,
+			};
+			
+			return ValidationOptionOutput;
 		}
 		
-		const VALIDATION_OPTION_OUTPUT = {
-			'RULE' : ValidationOptionRule,
-			'OPTIONS' : ValidationOption,
+		ValidationOptionOutput = {
+			'RULE' : ValidationOptionRule.toUpperCase(),
+			'OPTION' : ValidationOption,
 		};
 		
-		return VALIDATION_OPTION_OUTPUT;
+		return ValidationOptionOutput;
 		
 	}
 	
 	// VALIDATE AREACODE
-	function AreacodeValidation(POSTCODE, POSTCODE_VALIDATION_RULE) { 
-		let AreacodeRegEx = new RegExp(AreacodeRegexList(POSTCODE_VALIDATION_RULE));
-		return AreacodeRegEx.test(POSTCODE); 
+	function AreacodeValidation(...P) { 
+		let AreacodeRegEx = new RegExp(AreacodeRegexList(P[1]));
+		return AreacodeRegEx.test(P[0]); 
 	}
 	
 	// CALCULATE DIFFERENCE IN TWO DATES
@@ -415,7 +512,7 @@
 		switch(ValidationCode)
 		{
 			case '1':
-				ValidationStatus = 'Password Must Contain at least 8 Characters and <b>1</b> Capital Letter';
+				ValidationStatus = 'Password Must Contain at least 8 Characters and 1 Capital Letter';
 				break;
 				
 			case '2':
@@ -423,11 +520,11 @@
 				break;
 				
 			case '3':
-				ValidationStatus = 'Proceeding Start Date Cannot Have a Date Previous to Today';
+				ValidationStatus = 'Start Date Cannot Have a Date Previous to Today';
 				break;
 				
 			case '4':
-				ValidationStatus = 'Proceeding Start Date Cannot be Over <b>30 Days</b>';
+				ValidationStatus = 'Start Date Cannot be Over <b>30 Days</b>';
 				break;
 				
 			case '5':
@@ -475,7 +572,11 @@
 				break;
 				
 			case '16':
-				ValidationStatus = 'Not an accepted Email';
+				ValidationStatus = 'Not Accepted Email';
+				break;
+				
+			case '17':
+				ValidationStatus = 'Additional Criteria Has Not Been Met';
 				break;
 				
 			default:
