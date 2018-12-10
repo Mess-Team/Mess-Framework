@@ -1,32 +1,32 @@
 // GET CURRENT DATE AND FORMAT
-function getDate()
+function GetDate()
 {
     // SET CURRENT DATE
-    var dateObject = new Date();
-    var FetchedDate = FormatDate(dateObject);
+    const DATE = new Date();
+    const FORMATEDDATE = FormatDate(DATE);
 
-    return FetchedDate;
+    return FORMATEDDATE;
 }
 
 // FORMATED ANY PASSED DATE
-function FormatDate(PassedDate)
+function FormatDate(PASSEDDATE)
 {
     // SET DATE VARIABLES
-    var dateObject = new Date(PassedDate);
-    var Month = dateObject.getUTCMonth() + 1;
-    var Day = dateObject.getUTCDate();
-    var Year = dateObject.getUTCFullYear();
-    var Full = Month + "/" + Day + "/" + Year;
-    var Seconds = dateObject.getTime() / 1000;
+    const DATE = new Date(PASSEDDATE);
+    const MONTH = DATE.getUTCMonth() + 1;
+    const DAY = DATE.getUTCDate();
+    const YEAR = DATE.getUTCFullYear();
+    const FULL = MONTH + "/" + DAY + "/" + YEAR;
+    const SECONDS = DATE.getTime() / 1000;
     
     // BUILD DATE ARRAY
-    var FormatedDate = {
-        'F': Full,
-        'S': Seconds,
-        'Y': Year,
-        'D': Day,
-        'M': Month
+    var FORMATEDDATE = {
+        'F': FULL,
+        'S': SECONDS,
+        'Y': YEAR,
+        'D': DAY,
+        'M': MONTH
     };
     
-    return FormatedDate;
+    return FORMATEDDATE;
 }

@@ -1,107 +1,66 @@
-<!DOCTYPE html>
-<html>
-		<head>
-			<link rel="stylesheet" href="css/Validation.css">
-			<title>Validation Example</title>
-		</head>
-<body>
-	<span>
-		<section class="container">
-			<form>
-				<fieldset>
-					<legend>Validation Form</legend>
-					
-						<!-- DATE VALIDATION >  START DATE TODAY OR GREATER > NO MORE THAN 30 DAYS-->
-						<label>Policy Start</label>
-						<input type="date" data-validation="ProceedingDate"> <br><br>
-					
-						<!-- DATE VALIDATION > MIN 2 WEEKS BEFORE 17 > MAX AGED 85 -->
-						<label>Age 17 to 85</label>
-						<input type="date" data-validation="Age"> <br><br>
-						
-						<!-- SELECT VALIDATION > MUST BEEN SELECTED -->
-						<label>Must Be Selected</label>
-						<select data-validation="Required">
-							<option value="">Please Select Something...</option>
-							<option value="Option 1">Option 1</option>
-							<option value="Option 2">Option 2</option>
-							<option value="Option 3">Option 3</option>
-							<option value="Option 4">Option 4</option>
-						</select> <br><br>
-						
-						<!-- INPUT FIELD REQUIRED -->
-						<label>Must Be Inputted</label>
-						<input type="text" data-validation="Required" placeholder="Add Some Text..."><br><br>
-						
-						<!-- INPUT FIELD REQUIRED -->
-						<label>Must Be Inputted</label>
-						<input type="text" data-validation="Required" placeholder="Add Some Text..."><br><br>
-						
-						<!-- INPUT FIELD REQUIRED -->
-						<label>Must Be Inputted</label>
-						<input type="text" data-validation="Required" placeholder="Add Some Text..."><br><br>
-						
-						<!-- EMAIL VALIDATION -->
-						<label for="Email">Email</label>
-						<input type="email" placeholder="email@address.com" data-validation="Email"><br><br>
-						
-						<!-- PASSWORD VALIDATION -->
-						<label for="Password">Password</label>
-						<input type="password" placeholder="********" data-validation="Password"><br><br>
-						
-						<!-- CONFIRMATION PASSWORD VALIDATION -->
-						<label>Confirm Password</label>
-						<input type="password" placeholder="********" data-validation="Password2"><br><br>
-						
-						<button type="" data-action="validate">Validate</button>
-						
-				</fieldset>
-			</form>
-		</section>
-	</span>
 
-	<!--  INCLUDED SCRIPTS -->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<script src="/js/validation.js"></script>
-	<!-- / INCLUDED SCRIPTS -->
+<input placeholder="BASIC INFORMATION" style="text-align: center;" disabled>
 
+<!-- BASIC INFORMATION -->
+<select data-label="Title" data-validation="Required">
+	<option value="">Title</option>
+	<option value="1">Master</option>
+	<option value="2">Mr</option>
+	<option value="3">Mrs</option>
+	<option value="4">Miss</option>
+	<option value="5">Dr</option>
+</select>
 
-	<script>
-		$('[data-action="validate"]').click(function() {
-			
-			event.preventDefault();
+<input placeholder="First Name" data-label="First Name" data-validation="Required">
+	<input placeholder="Midde Name(s)" data-label="Midde Name(s)">
+<input placeholder="Last Name" data-label="Last Name" data-validation="Required">
 
-			var Data = [];
-			var Count = 0;
-			
-			// BUILD DATA OBJECT
-			$('[data-validation]').each(function() {
-				
-				// GET DATA
-				var Inner = [];
-				var DataValidation = $(this).attr('data-validation');
-				var DataSave = $(this).attr('data-save');
-				
-				// FIX FOR REQUIRED OVERWRITING
-				if (DataValidation == 'Required')
-				{
-					$(this).attr('data-count', Count);
-				}
-				
-				// PUSH DATA
-				Inner[DataValidation] = DataSave;
-				Data[Count++] = Inner;
-				
-			});	
-			
-			// DEBUG
-			console.log(Data);
-			
-			// RUN VALIDATION FUNCTION
-			ValidationOutput = Validation('', Data);
-			
-		});
+<input placeholder="ADDRESS INFORMATION" style="text-align: center;" disabled>
+
+<!-- ADDRESS INFORMATION -->
+<input placeholder="Address Line 1" data-label="Address Line 1" data-validation="Required">
+	<input placeholder="Address Line 2" data-label="Address Line 2">
+	<input placeholder="Address Line 3" data-label="Address Line 3">
+	
+<input placeholder="Postcode" data-label="Postcode" data-validation="Postcode" data-validationoption="INCLUDE:WS6">
+
+<input placeholder="City" data-label="City">
+
+<select data-label="County" data-validation="Required">
+	<option value="">County</option>
+	<option value="1">West Midlands</option>
+	<option value="2"></option>
+</select>
+
+<input placeholder="CONTACT DETAILS" style="text-align: center;" disabled>
+
+<!-- CONTACT DETAILS -->
+<input placeholder="Email Address" type="email" data-label="Email Address" data-validation="Email" data-validationOption="include:gmail.com,yahoo.com">
+
+<input placeholder="Mobile Number" data-label="Mobile Number" data-validation="Phone">
+
+<input placeholder="Landline Number" data-label="Landline Number" data-validation="Phone">
+
+<input placeholder="PASSWORD DETAILS" style="text-align: center;" disabled>
+
+<!-- PASSWORD -->
+<input placeholder="********" data-label="Password" type="Password" data-validation="Password">
+
+<input placeholder="********" data-label="Password" type="Password" data-validation="Password2"> 
+
+<input placeholder="DATE DETAILS" style="text-align: center;" disabled>
+
+<!-- DATE VALIDATION -->
+<input data-label="Start Date" type="date" data-validation="PStartDate">
 		
-	</script>
-</body>
-</html>
+<input data-label="DOB" type="date" data-validation="Age" data-validationoption="C1">
+
+<input data-label="Slider" data-output="" step="1" type="range" min="-1" max="25" data-validation="Range" value="-1">
+
+<input class="hidden" data-validation="LOCATE" data-validationOption="FIND:input[data-label]">
+
+<!-- VALIDATION BUTTON -->
+<button data-validate="true" data-next="Cancel">
+	Validate
+</button>
+			
